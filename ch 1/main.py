@@ -1,9 +1,12 @@
-# This is a sample Python script.
+# This is a sample tensorflow coding for devduck
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
+import sys
 import tensorflow as tf
+import tensorflow.compat.v1 as tf1
+import numpy as np
+
+def custom_polynomial(value):
+    return (tf.subtract(3 * tf.square(value), value) + 10)
 
 #텐서 초기화
 zero_tsr = tf.zeros([5,5])#0 값 채우는 텐서
@@ -18,3 +21,32 @@ runcnorm_tsr = tf.random.truncated_normal([2,2], mean=0.0, stddev = 1.0)# 표준
 
 my_var = tf.Variable(tf.zeros([2,2]))
 print(my_var)
+
+#플레이스 홀더 : 특정 "타입"과 "형태"의 데이터를 투입하게 될 객체 -> tensorflow 2.0 에서 제거됨(session 정의도 이제 필요 없음)
+my_var = tf.Variable(tf.zeros([2, 3]))
+sess=tf1.Session()
+tf.compat.v1.disable_eager_execution()
+x = tf1.placeholder(tf1.float32, shape=[2, 2])
+y = tf.identity(x)
+x_vals = np.random.rand(2, 2)
+sess.run(y, feed_dict={x: x_vals})
+
+identity_matrix = tf.linalg.diag([1.0, 1.0, 1.0])
+A = tf.random.truncated_normal([2, 3])
+B = tf.fill([2, 3], 5.0)
+C = tf.random.uniform([3,2])
+D = tf.convert_to_tensor(np.array([[1., 2., 3.], [-3., -7., -1.], [0., 5., -2.]]))
+print(sess.run(identity_matrix))
+print(sess.run(A))
+
+print(sess.run(tf.truediv(3,4)))
+print(sess.run(tf.math.floordiv(3.0, 4.0)))
+print(sess.run(tf.math.mod(22.0, 5.0)))
+print(sess.run(tf.linalg.cross([1., 0., 0.], [0., 1., 0.])))
+
+print(sess.run(custom_polynomial(11)))
+sess.close()
+
+print(tf.divide(3, 4))
+print(tf.multiply(3, 4))
+tf.print(tf.truediv(3, 4), output_stream=sys.stderr)
