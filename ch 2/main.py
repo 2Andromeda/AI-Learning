@@ -1,6 +1,8 @@
 
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 print(tf.__version__)
 
@@ -53,3 +55,52 @@ with tf.name_scope('Custom_Layer') as scope:
         return custom_layer(mov_layer(x_data))
 
 tf.print(custom_layer1(x_val))
+
+x_vals = tf.linspace(-1., 1., 500)
+target = tf.constant(0.)
+
+#L2 norm 비용함수(유클리드 비용 함수)
+l2_y_vals = tf.square(target - x_vals)
+l1_y_vals = tf.abs(target - x_vals)
+
+#pseudo-Huber 함수
+delta1 = tf.constant(0.25)
+phuber1_y_vals = tf.multiply(tf.square(delta1), tf.sqrt(1. + tf.square((target - x_vals)/delta1)) -1.)
+delta2 = tf.constant(5.)
+phuber2_y_vals = tf.multiply(tf.square(delta2), tf.sqrt(1. + tf.square((target - x_vals)/delta2)) -1.)
+
+x_vals = tf.linspace(-3., 5., 500)
+target = tf.constant(1.)
+targets = tf.fill([500,], 1.)
+
+
+
+#힌지 비용 함수
+hinge_y_vals = tf.maximum(0., 1. - tf.multiply(target, x_vals))
+
+#교차 엔트로피(cross-entropy) 비용 함수
+xentropy_y_vals = -tf.multiply(target, tf.math.log(x_vals)) - tf.multiply((1. - target), tf.math.log(1. - x_vals))
+
+#시그모이드 교차 엔트로피 (sigmoid cross entropy) - 교차 엔트로피에 넣기 전에 시그모이드 함수로 변환
+x_val_input = tf.expand_dims(x_vals, 1)
+target_input = tf.expand_dims(targets, 1)
+xentropy_sigmoid_y_vals = tf.nn.sigmoid_cross_entropy_with_logits(labels = target_input, logits = x_val_input)
+
+#가중 교차 엔트로피 (weighted cross entropy) - sigmoid cross entropy에 가중치를 더한 것
+#양수 대상 값에 가중치를 부여하며, 아래는 양수 대상 값에 0.5의 가중치를 더한것
+weight = tf.constant(0.5)
+xentropy_weighted_y_vals = tf.nn.weighted_cross_entropy_with_logits(targets, x_vals, weight)
+
+#소프트 맨스 교차 엔트로피(softmax cross entropy) -여럿이 아닌 하나의 분류 대상에 대한 비용 측정 시 사용, 확률 분포로 변환하고 실제 확률 분포와 비교 및 비용 계산
+unscaled_logits = tf.constant([[1., -3., 10.]])
+target_dist = tf.constant([[0.1, 0.0.2, 0.88]])
+softmax_xentropy = tf.nn.softmax_cross_entropy_with_logits(logits = unscaled_logits, labels= target_dist)
+tf.print(softmax_xentropy)
+
+#희소 소프트맥스 교차 엔트로피 비용 함수 (sparse softmax cross entropy) - 확률 분포가 아닌 실제 속한 분류가 어디인지 표시
+sparse_target_dist = tf.constant([2])
+sparse_xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits = unscaled_logits, labels= sparse_target_dist)
+tf.print(sparse_xentropy)
+
+
+
